@@ -1,0 +1,34 @@
+name: Update Streaks
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:
+
+jobs:
+  update-streak:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Update current streaks
+        run: |
+          echo "Updating current streak for all habits..."
+          for habit in $(ls data); do
+            last_occurrence=$(cat data/$habit/lastOccurrence.txt)
+            now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            diff_min=$(( ( $(date -d "$now" +%s) - $(date -d "$last_occurrence" +%s) ) / 60 ))
+
+            # Replace last line in streaks.csv with current streak
+            sed -i '$d' data/$habit/streaks.csv
+            echo $diff_min >> data/$habit/streaks.csv
+          done
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data
+          git commit -m "Update current streaks" || echo "No changes to commit"
+          git push
