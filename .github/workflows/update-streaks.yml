@@ -1,38 +1,38 @@
-name: Update Streaks
+# name: Update Streaks
 
-on:
-  schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes
-  workflow_dispatch:
+# on:
+#   schedule:
+#     - cron: '*/5 * * * *'  # every 5 minutes
+#   workflow_dispatch:
 
-jobs:
-  update-streak:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false  # IMPORTANT to disable default token
+# jobs:
+#   update-streak:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v3
+#         with:
+#           persist-credentials: false  # IMPORTANT to disable default token
 
-      - name: Update current streaks
-        run: |
-          echo "Updating current streak for all habits..."
-          for habit in $(ls data); do
-            last_occurrence=$(cat data/$habit/lastOccurrence.txt)
-            now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-            diff_min=$(( ( $(date -d "$now" +%s) - $(date -d "$last_occurrence" +%s) ) / 60 ))
+#       - name: Update current streaks
+#         run: |
+#           echo "Updating current streak for all habits..."
+#           for habit in $(ls data); do
+#             last_occurrence=$(cat data/$habit/lastOccurrence.txt)
+#             now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+#             diff_min=$(( ( $(date -d "$now" +%s) - $(date -d "$last_occurrence" +%s) ) / 60 ))
 
-            # Replace last line in streaks.csv with current streak
-            sed -i '$d' data/$habit/streaks.csv
-            echo $diff_min >> data/$habit/streaks.csv
-          done
+#             # Replace last line in streaks.csv with current streak
+#             sed -i '$d' data/$habit/streaks.csv
+#             echo $diff_min >> data/$habit/streaks.csv
+#           done
 
-      - name: Commit and push changes
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@users.noreply.github.com"
-          git add data
-          git commit -m "Update current streaks" || echo "No changes"
-          git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git HEAD:main
+#       - name: Commit and push changes
+#         env:
+#           GH_PAT: ${{ secrets.GH_PAT }}
+#         run: |
+#           git config --global user.name "github-actions"
+#           git config --global user.email "github-actions@users.noreply.github.com"
+#           git add data
+#           git commit -m "Update current streaks" || echo "No changes"
+#           git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git HEAD:main
